@@ -1,0 +1,86 @@
+Допустим, что существует телефонная компания, хранящая данные о своих клиентах.
+
+Для простого учета используется класс Customer(Клиент), содержащий атрибуты:
+
+-поле name: имя клиента (чтение/запись)
+-свойство balance: баланс счета клиента (только чтение)
+-метод record_payment(): выполняет пополнение баланса
+-метод record_call(): выполняет обработку звонка клиента в зависимости от:
+--типа звонка: "городской" (5 руб./мин) и "мобильный" (1 руб. мин)
+--количества минут разговора
+
+
+Нужно расширить возможности добавив наличие тарифного плана, в каждом из которых есть тип звонка (мобильный или городской)
+
+"Повременный": городской (5 руб.мин), мобильный (1 руб./мин)
+
+"После 10 минут в 2 раза дешевле": после 10 минут звонка на городской номер каждая вторая минута бесплатно
+остальное как в тарифе "Повременный"
+
+"Плати меньше до 5 минут": до 5 минут разговора в 2 раза дешевле тарифа "Повременный", после в 2 раза дороже
+
+
+
+-атрибут
++свойство
+=метод
+
+
+SimplePlan:
+
+type_m = None
+type_g = None
+
+=record_call(type(enum), minutes):
+    if(type.MOBILE):
+        record_call_m(minutes)
+    elif(type.GOROD):
+        record_call_g(minutes)
+
+=record_call_m(minutes):
+    pass
+
+=record_call_g(minutes):
+    pass
+
+Timed(SimplePlan):
+
+type_m = 1
+type_g = 5
+
+=record_call_m(minutes):
+    return minutes * type_m
+
+=record_call_g(minutes):
+    return minutes * type_g
+
+After10(Timed):
+
+=record_call_g(minutes):
+    if(minutes > 10):
+        return 10 * type_g + (minutes - 10) // 2 * type_g
+    else:
+        super().record_call_g()
+
+Before5(Timed):
+
+=record_call_g(minutes):
+    if(minutes <= 5):
+        return minutes * type_g / 2
+    else:
+        return -= minutes * type_g * 2
+
+=record_call_m(minutes):
+    if(minutes <= 5):
+        return minutes * type_m / 2
+    else:
+        return minutes * type_m * 2
+
+Customer:
+
+-name
+-tarif
++balance
+=record_payment(payment)
+=record_call(type, minutes):
+    balance -= tarif.record_call(type, minutes)
